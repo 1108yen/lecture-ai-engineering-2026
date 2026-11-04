@@ -9,6 +9,13 @@
 
 ## 宿題
 
+- 取り組んだレベル：基礎
+- やったこと：`app/tools.py` の `search_glossary` ツールの docstring を書き換え、「query には調べたい用語を1つだけ入れる（例: "LoRA"）」から「query には調べたい用語を空白区切りでまとめて入れる（例: "LoRA QLoRA"）」に変更した。その後、演習と同じ質問「LoRA とQLORAの違いは?」を `--trace` 付きで実行し、ツールの呼ばれ方と回数を比較した。
+- 結果：変更前は `search_glossary({'query': 'LoRA'})` と `search_glossary({'query': 'QLORA'})` の2回に分けて呼び出されていた（requests=2, tool_calls=2）が、変更後はモデルが docstring の指示通りに判断し、`[tool call] search_glossary({'query': 'LoRA QLoRA'})` と1回のリクエストにまとめて検索を実行した（requests=2, tool_calls=1）。
+- 気づき・疑問：エージェントのツール呼び出し行動は、プログラムのロジックだけでなく、関数の docstring（自然言語の説明文）に強く依存していることが確認できた。指示を工夫することでツール呼び出し回数（`tool_calls`）を削減でき、LLMとの往復コストやレイテンシの最適化につながると分かった。
+
+## 宿題
+
 - 取り組んだレベル：基礎 / 実装 / 発展
 - やったこと：
 - 結果：
