@@ -101,3 +101,15 @@ def make_quiz(lecture: int) -> str:
         },
         ensure_ascii=False,
     )
+
+def save_learning_log(topic: str, content: str) -> str:
+    """学習した内容の要約をファイルに保存する。
+
+    topic: 保存するトピック名（ファイル名の一部になる）
+    content: 保存する学習内容のテキスト
+    """
+    log_dir = Path("learning_log")
+    log_dir.mkdir(exist_ok=True)
+    file_path = log_dir / f"{topic}.txt"
+    file_path.write_text(content, encoding="utf-8")
+    return f"ログを {file_path} に保存しました。"
