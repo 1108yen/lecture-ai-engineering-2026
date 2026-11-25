@@ -15,8 +15,7 @@
 
 <!-- 基礎・実装・発展のどれか1つに取り組めば完了です。 -->
 
-- 取り組んだレベル：基礎
-- やったこと：`app/mcp_server.py` の末尾に `server.tool()(tools.get_lecture_summary)` の1行を書き足し、エージェント側（`app/mcp_agent.py` や `app/mcp_servers.json`）を変更せずにツール一覧の確認（`--list-tools`）、質問実行（`--trace "第2回では何を学びますか?"`）、自動テスト（`uv run pytest -q`）を行った。
-- 結果：`--list-tools` で `glossary_get_lecture_summary` が追加され、合計ツール数が7個から8個に増えた。質問実行時のトレースでは `[tool call] glossary_get_lecture_summary({'lecture': 2})` が呼ばれ、第2回の講義要約（ファインチューニングとLoRA）が正しく回答された。自動テスト（`uv run pytest -q`）もすべて通過した。
-- 気づき・疑問：エージェントは起動するたびに接続先の MCP サーバーへ公開ツール一覧を問い合わせるため、クライアント側の設定やコードを一切変えずにサーバー側へ機能を追加できる仕組みを実感した。
-
+- 取り組んだレベル：実装
+- やったこと：第3回で作成した `make_quiz` を `app/tools.py` に追加し（存在しない回が指定された場合は「第{lecture}回の用語は見つかりませんでした。指定できる講義回は第1回から第6回までです。」と返すようにした）、`app/mcp_server.py` に `server.tool()(tools.make_quiz)` を追加して MCP ツールとして公開した。その上で `--trace` 付きで正常系（`"第2回のクイズを作って"`）と範囲外（`"第99回のクイズを作って"`）の質問を実行し、自動テスト（`python -m pytest -q`）も確認した。
+- 結果：`--list-tools` で `glossary_make_quiz` が増え、ツール数は計9個になった。正常系では `[tool call] glossary_make_quiz({'lecture': 2})` からクイズ JSON が返り、「過学習」の確認問題が出題された。範囲外（`lecture: 99`）ではツールが返したメッセージを受け取ったモデルが推測で問題を作らず、第99回が存在しないため作成できない旨を丁寧に回答した。`python -m pytest -q` も全21件通過した。
+- 気づき・疑問：MCP サーバー側のツールが返したエラー文字列はそのままモデルの次の入力（`[tool return]`）として渡るため、単に失敗させるのではなく「なぜ失敗したか・どの範囲なら有効か」をメッセージに書いておくと、モデルが推測せず適切な案内を返せる。また、実装途中で `import random` を漏らして `[tool error]` が出た際は、モデルが自律的に `glossary_get_lecture_summary` を呼び出して代替回答を作る動きも `--trace` で確認できた。
